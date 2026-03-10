@@ -2,6 +2,8 @@ const tabPages = [...document.querySelectorAll('.tab-page')];
 const navTabs = [...document.querySelectorAll('[data-page]')];
 const siteHeader = document.querySelector('.site-header');
 const homeLogo = document.querySelector('.home-brand-logo');
+const menuToggle = document.getElementById('menu-toggle');
+const siteNav = document.querySelector('.site-nav');
 const progressBar = document.getElementById('scroll-progress-bar');
 const backToTopBtn = document.getElementById('back-to-top');
 let activePage = 'home';
@@ -103,8 +105,24 @@ function setActivePage(pageName) {
 navTabs.forEach((control) => {
   control.addEventListener('click', (event) => {
     event.preventDefault();
+    if (siteNav) siteNav.classList.remove('open');
+    if (menuToggle) menuToggle.setAttribute('aria-expanded', 'false');
     setActivePage(control.dataset.page);
   });
+});
+
+if (menuToggle && siteNav) {
+  menuToggle.addEventListener('click', () => {
+    const open = siteNav.classList.toggle('open');
+    menuToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+}
+
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 760 && siteNav && menuToggle) {
+    siteNav.classList.remove('open');
+    menuToggle.setAttribute('aria-expanded', 'false');
+  }
 });
 
 window.addEventListener('scroll', () => {
