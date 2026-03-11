@@ -196,6 +196,7 @@ function setFormStatus(form, message, tone) {
     status = document.createElement('p');
     status.className = 'form-status';
     status.setAttribute('aria-live', 'polite');
+    status.setAttribute('role', 'status');
     form.appendChild(status);
   }
 
@@ -203,6 +204,7 @@ function setFormStatus(form, message, tone) {
   status.classList.remove('success', 'error');
   if (tone === 'success') status.classList.add('success');
   if (tone === 'error') status.classList.add('error');
+  status.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   return status;
 }
 
@@ -253,6 +255,7 @@ forms.forEach((form) => {
         ? error.message
         : 'Could not submit right now. Please call or WhatsApp us.';
       setFormStatus(form, message, 'error');
+      window.alert(message);
     } finally {
       button.disabled = false;
       button.textContent = originalText;
