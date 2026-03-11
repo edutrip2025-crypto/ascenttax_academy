@@ -6,8 +6,6 @@ const menuToggle = document.getElementById('menu-toggle');
 const siteNav = document.querySelector('.site-nav');
 const progressBar = document.getElementById('scroll-progress-bar');
 const backToTopBtn = document.getElementById('back-to-top');
-const FORM_ENDPOINT = '/api/submit';
-const FORM_FALLBACK_ENDPOINT = 'https://formsubmit.co/info@ascenttaxacademy.com';
 let activePage = 'home';
 let isTransitioning = false;
 
@@ -187,86 +185,6 @@ document.addEventListener('click', (event) => {
   const item = button.closest('.faq-item');
   if (!item) return;
   toggleFaqItem(item);
-});
-
-const forms = [...document.querySelectorAll('.enroll-form')];
-forms.forEach((form) => {
-  const ensureHiddenField = (name, value) => {
-    let input = form.querySelector(`input[name="${name}"]`);
-    if (!input) {
-      input = document.createElement('input');
-      input.type = 'hidden';
-      input.name = name;
-      form.appendChild(input);
-    }
-    input.value = value;
-  };
-
-  form.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const button = form.querySelector('button[type="submit"]');
-    const status = form.querySelector('.form-status');
-    if (!button) return;
-
-    const formData = new FormData(form);
-    const payload = {
-      formType: form.dataset.formType || '',
-      name: (formData.get('name') || '').toString().trim(),
-      email: (formData.get('email') || '').toString().trim(),
-      phone: (formData.get('phone') || '').toString().trim(),
-      preferredProgram: (formData.get('preferred_program') || '').toString().trim(),
-      message: (formData.get('message') || '').toString().trim(),
-      sourcePage: window.location.href,
-      honey: (formData.get('honey') || '').toString().trim()
-    };
-
-    button.disabled = true;
-    const originalText = button.textContent;
-    button.textContent = 'Sending...';
-    if (status) {
-      status.textContent = '';
-      status.classList.remove('success', 'error');
-    }
-
-    try {
-      const response = await fetch(FORM_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
-
-      const result = await response.json().catch(() => ({}));
-      if (!response.ok || !result.ok) {
-        throw new Error(result.message || 'Could not submit your request.');
-      }
-
-      form.reset();
-      if (status) {
-        status.textContent = 'Thanks. Your request was submitted successfully.';
-        status.classList.add('success');
-      }
-    } catch (error) {
-      // Fallback path: direct submit to FormSubmit if backend is unavailable.
-      ensureHiddenField('_captcha', 'false');
-      ensureHiddenField('_template', 'table');
-      ensureHiddenField(
-        '_subject',
-        form.dataset.formType === 'contact'
-          ? 'New Contact Message - Ascent Tax Academy'
-          : 'New Enrollment Request - Ascent Tax Academy'
-      );
-      form.action = FORM_FALLBACK_ENDPOINT;
-      form.method = 'POST';
-      HTMLFormElement.prototype.submit.call(form);
-      return;
-    } finally {
-      button.disabled = false;
-      button.textContent = originalText;
-    }
-  });
 });
 
 if (backToTopBtn) {
