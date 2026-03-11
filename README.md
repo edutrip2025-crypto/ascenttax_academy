@@ -22,7 +22,21 @@ vercel
 vercel --prod
 ```
 
+### Form Setup (Titan SMTP)
+
+Both forms submit to `/api/submit` and the backend sends email via Titan SMTP.
+
+Set these environment variables in Vercel:
+
+- `SMTP_HOST` = `smtp.titan.email`
+- `SMTP_PORT` = `465`
+- `SMTP_SECURE` = `true`
+- `SMTP_USER` = `info@ascenttaxacademy.com`
+- `SMTP_PASS` = `<your-email-password>`
+- `FORM_FROM_EMAIL` = `Ascent Tax Academy <info@ascenttaxacademy.com>`
+- `FORM_TO_EMAIL` = `info@ascenttaxacademy.com`
+
 ### Notes
 
 - `vercel.json` is included for clean URL/static behavior.
-- No environment variables are required.
+- SMTP environment variables are required for form delivery.
