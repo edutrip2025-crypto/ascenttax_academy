@@ -229,12 +229,14 @@ forms.forEach((form) => {
 
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data.ok) {
-        throw new Error(data.message || 'Could not submit your request.');
+        const suffix = data.requestId ? ` (Ref: ${data.requestId})` : '';
+        throw new Error((data.message || 'Could not submit your request.') + suffix);
       }
 
       form.reset();
       if (status) {
-        status.textContent = 'Thanks. Your request was submitted successfully.';
+        const suffix = data.requestId ? ` Ref: ${data.requestId}` : '';
+        status.textContent = `Thanks. Your request was submitted successfully.${suffix}`;
         status.classList.add('success');
       }
     } catch (error) {

@@ -16,6 +16,8 @@ function buildHtml(data) {
 }
 
 module.exports = async function handler(req, res) {
+  const requestId = `req_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
   if (req.method === 'OPTIONS') {
     res.setHeader('Allow', 'POST, OPTIONS');
     return res.status(204).end();
@@ -23,7 +25,7 @@ module.exports = async function handler(req, res) {
 
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST, OPTIONS');
-    return res.status(405).json({ ok: false, message: 'Method not allowed' });
+    return res.status(405).json({ ok: false, message: 'Method not allowed', requestId });
   }
 
   try {
@@ -35,8 +37,19 @@ module.exports = async function handler(req, res) {
     const toEmail = process.env.FORM_TO_EMAIL || 'info@ascenttaxacademy.com';
     const fromEmail = process.env.FORM_FROM_EMAIL || `Ascent Tax Academy <${smtpUser}>`;
 
+    console.log(`[${requestId}] submit:start`, {
+      smtpHost,
+      smtpPort,
+      smtpSecure,
+      smtpUser,
+      fromEmail,
+      toEmail,
+      hasSmtpPass: Boolean(smtpPass)
+    });
+
     if (!smtpPass) {
-      return res.status(500).json({ ok: false, message: 'Server email config missing: SMTP_PASS' });
+      console.error(`[${requestId}] submit:config_error SMTP_PASS missing`);
+      return res.status(500).json({ ok: false, message: 'Server email config missing: SMTP_PASS', requestId });
     }
 
     const payload = req.body && typeof req.body === 'object' ? req.body : {};
@@ -50,26 +63,31 @@ module.exports = async function handler(req, res) {
     const honey = getField(payload, 'honey');
 
     if (honey) {
-      return res.status(200).json({ ok: true });
+      console.warn(`[${requestId}] submit:honeypot_triggered`);
+      return res.status(200).json({ ok: true, requestId });
     }
 
     if (!name || !email) {
-      return res.status(400).json({ ok: false, message: 'Name and email are required.' });
+      console.error(`[${requestId}] submit:validation_error name/email missing`);
+      return res.status(400).json({ ok: false, message: 'Name and email are required.', requestId });
     }
 
     const isEnrollment = formType === 'enrollment';
     const isContact = formType === 'contact';
 
     if (!isEnrollment && !isContact) {
-      return res.status(400).json({ ok: false, message: 'Invalid form type.' });
+      console.error(`[${requestId}] submit:validation_error invalid formType`, { formType });
+      return res.status(400).json({ ok: false, message: 'Invalid form type.', requestId });
     }
 
     if (isEnrollment && (!phone || !preferredProgram)) {
-      return res.status(400).json({ ok: false, message: 'Phone and preferred program are required.' });
+      console.error(`[${requestId}] submit:validation_error enrollment fields missing`);
+      return res.status(400).json({ ok: false, message: 'Phone and preferred program are required.', requestId });
     }
 
     if (isContact && !message) {
-      return res.status(400).json({ ok: false, message: 'Message is required.' });
+      console.error(`[${requestId}] submit:validation_error contact message missing`);
+      return res.status(400).json({ ok: false, message: 'Message is required.', requestId });
     }
 
     const subject = isEnrollment
@@ -105,12 +123,21 @@ module.exports = async function handler(req, res) {
       html
     };
 
+    console.log(`[${requestId}] submit:send_attempt`, { subject, formType });
     const info = await transporter.sendMail(mailOptions);
-    return res.status(200).json({ ok: true, id: info.messageId || null });
+    console.log(`[${requestId}] submit:send_success`, { messageId: info.messageId || null });
+    return res.status(200).json({ ok: true, id: info.messageId || null, requestId });
   } catch (error) {
+    console.error(`[${requestId}] submit:send_error`, {
+      message: error && error.message ? error.message : null,
+      code: error && error.code ? error.code : null,
+      command: error && error.command ? error.command : null,
+      stack: error && error.stack ? error.stack : null
+    });
     return res.status(500).json({
       ok: false,
-      message: error && error.message ? error.message : 'Unexpected server error.'
+      message: error && error.message ? error.message : 'Unexpected server error.',
+      requestId
     });
   }
 };
