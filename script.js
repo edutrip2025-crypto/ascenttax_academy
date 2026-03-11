@@ -208,6 +208,23 @@ function setFormStatus(form, message, tone) {
   return status;
 }
 
+function renderSuccessMessage(form, formType) {
+  const status = setFormStatus(form, '', 'success');
+  const title = formType === 'enrollment'
+    ? 'Request Submitted Successfully'
+    : 'Message Sent Successfully';
+  const detail = formType === 'enrollment'
+    ? 'Our counseling team will contact you shortly with your next-step learning plan.'
+    : 'Our team received your message and will respond soon.';
+
+  status.innerHTML = `
+    <span style="display:block;padding:10px 12px;border-radius:10px;background:rgba(58,190,120,.16);border:1px solid rgba(58,190,120,.45);">
+      <strong style="display:block;font-size:1rem;">${title}</strong>
+      <span style="display:block;margin-top:4px;">${detail}</span>
+    </span>
+  `;
+}
+
 async function submitForm(form) {
   if (!form || form.dataset.submitting === '1') return;
 
@@ -249,8 +266,7 @@ async function submitForm(form) {
     }
 
     form.reset();
-    const suffix = data.requestId ? ` Ref: ${data.requestId}` : '';
-    setFormStatus(form, `Thanks. Your request was submitted successfully.${suffix}`, 'success');
+    renderSuccessMessage(form, payload.formType || form.dataset.formType || '');
   } catch (error) {
     const message = error && error.message
       ? error.message
