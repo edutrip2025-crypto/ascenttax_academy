@@ -7,6 +7,7 @@ const siteNav = document.querySelector('.site-nav');
 const progressBar = document.getElementById('scroll-progress-bar');
 const backToTopBtn = document.getElementById('back-to-top');
 const FORM_ENDPOINT = '/api/submit';
+const FORM_FALLBACK_ENDPOINT = 'https://formsubmit.co/info@ascenttaxacademy.com';
 let activePage = 'home';
 let isTransitioning = false;
 
@@ -190,6 +191,17 @@ document.addEventListener('click', (event) => {
 
 const forms = [...document.querySelectorAll('.enroll-form')];
 forms.forEach((form) => {
+  const ensureHiddenField = (name, value) => {
+    let input = form.querySelector(`input[name="${name}"]`);
+    if (!input) {
+      input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = name;
+      form.appendChild(input);
+    }
+    input.value = value;
+  };
+
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     const button = form.querySelector('button[type="submit"]');
@@ -237,10 +249,19 @@ forms.forEach((form) => {
         status.classList.add('success');
       }
     } catch (error) {
-      if (status) {
-        status.textContent = error.message || 'Could not submit right now. Please call or WhatsApp us.';
-        status.classList.add('error');
-      }
+      // Fallback path: direct submit to FormSubmit if backend is unavailable.
+      ensureHiddenField('_captcha', 'false');
+      ensureHiddenField('_template', 'table');
+      ensureHiddenField(
+        '_subject',
+        form.dataset.formType === 'contact'
+          ? 'New Contact Message - Ascent Tax Academy'
+          : 'New Enrollment Request - Ascent Tax Academy'
+      );
+      form.action = FORM_FALLBACK_ENDPOINT;
+      form.method = 'POST';
+      HTMLFormElement.prototype.submit.call(form);
+      return;
     } finally {
       button.disabled = false;
       button.textContent = originalText;
