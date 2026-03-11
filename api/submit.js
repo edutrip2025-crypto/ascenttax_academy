@@ -53,7 +53,7 @@ module.exports = async function handler(req, res) {
     }
 
     const payload = req.body && typeof req.body === 'object' ? req.body : {};
-    const formType = getField(payload, 'formType');
+    const formType = getField(payload, 'formType') || 'contact';
     const name = getField(payload, 'name');
     const email = getField(payload, 'email');
     const phone = getField(payload, 'phone');
