@@ -397,12 +397,8 @@
             <li>Step 4: Start with onboarding guidance</li>
           </ul>
         </div>
-        <form class="enroll-form" data-form-type="enrollment" action="https://formsubmit.co/info@ascenttaxacademy.com" method="POST">
-          <input type="hidden" name="_subject" value="New Enrollment Request - Ascent Tax Academy">
-          <input type="hidden" name="_captcha" value="false">
-          <input type="hidden" name="_template" value="table">
-          <input type="hidden" name="_next" value="https://www.ascenttaxacademy.com/">
-          <input type="text" name="_honey" tabindex="-1" autocomplete="off" style="display:none">
+        <form class="enroll-form" data-form-type="enrollment" action="/api/submit" method="POST">
+          <input type="text" name="honey" tabindex="-1" autocomplete="off" style="display:none">
           <label>
             Full Name
             <input type="text" name="name" placeholder="Enter your full name" required>
@@ -427,6 +423,7 @@
             </select>
           </label>
           <button type="submit" class="btn btn-primary">Submit Request</button>
+          <p class="form-status" aria-live="polite"></p>
         </form>
       </div>
       <aside class="hero-panel cohort-last">
@@ -483,12 +480,8 @@
         <article class="contact-form-wrap">
           <p class="kicker">Quick Form</p>
           <h3>Send Us a Message</h3>
-          <form class="enroll-form contact-form" data-form-type="contact" action="https://formsubmit.co/info@ascenttaxacademy.com" method="POST">
-            <input type="hidden" name="_subject" value="New Contact Message - Ascent Tax Academy">
-            <input type="hidden" name="_captcha" value="false">
-            <input type="hidden" name="_template" value="table">
-            <input type="hidden" name="_next" value="https://www.ascenttaxacademy.com/">
-            <input type="text" name="_honey" tabindex="-1" autocomplete="off" style="display:none">
+          <form class="enroll-form contact-form" data-form-type="contact" action="/api/submit" method="POST">
+            <input type="text" name="honey" tabindex="-1" autocomplete="off" style="display:none">
             <label>
               Full Name
               <input type="text" name="name" placeholder="Enter your full name" required>
@@ -502,6 +495,7 @@
               <textarea name="message" placeholder="Write your query" rows="4" required></textarea>
             </label>
             <button type="submit" class="btn btn-primary">Send Message</button>
+            <p class="form-status" aria-live="polite"></p>
           </form>
         </article>
         <article>
