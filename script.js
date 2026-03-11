@@ -208,59 +208,75 @@ function setFormStatus(form, message, tone) {
   return status;
 }
 
-forms.forEach((form) => {
-  form.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const button = form.querySelector('button[type="submit"]');
-    if (!button) return;
+async function submitForm(form) {
+  if (!form || form.dataset.submitting === '1') return;
 
-    const originalText = button.textContent;
-    button.disabled = true;
-    button.textContent = 'Sending...';
-    setFormStatus(form, '', '');
+  const button = form.querySelector('button[type="submit"]');
+  if (!button) return;
 
-    try {
-      const formData = new FormData(form);
-      const payload = {
-        formType: form.dataset.formType || '',
-        name: (formData.get('name') || '').toString().trim(),
-        email: (formData.get('email') || '').toString().trim(),
-        phone: (formData.get('phone') || '').toString().trim(),
-        preferredProgram: (formData.get('preferred_program') || '').toString().trim(),
-        message: (formData.get('message') || '').toString().trim(),
-        sourcePage: window.location.href,
-        honey: (formData.get('honey') || '').toString().trim()
-      };
+  form.dataset.submitting = '1';
+  const originalText = button.textContent;
+  button.disabled = true;
+  button.textContent = 'Sending...';
+  setFormStatus(form, '', '');
 
-      const response = await fetch(FORM_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
+  try {
+    const formData = new FormData(form);
+    const payload = {
+      formType: (formData.get('formType') || form.dataset.formType || '').toString().trim(),
+      name: (formData.get('name') || '').toString().trim(),
+      email: (formData.get('email') || '').toString().trim(),
+      phone: (formData.get('phone') || '').toString().trim(),
+      preferredProgram: (formData.get('preferred_program') || '').toString().trim(),
+      message: (formData.get('message') || '').toString().trim(),
+      sourcePage: window.location.href,
+      honey: (formData.get('honey') || '').toString().trim()
+    };
 
-      const data = await response.json().catch(() => ({}));
-      if (!response.ok || !data.ok) {
-        const suffix = data.requestId ? ` (Ref: ${data.requestId})` : '';
-        throw new Error((data.message || 'Could not submit your request.') + suffix);
-      }
+    const response = await fetch(FORM_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
 
-      form.reset();
-      const suffix = data.requestId ? ` Ref: ${data.requestId}` : '';
-      setFormStatus(form, `Thanks. Your request was submitted successfully.${suffix}`, 'success');
-    } catch (error) {
-      const message = error && error.message
-        ? error.message
-        : 'Could not submit right now. Please call or WhatsApp us.';
-      setFormStatus(form, message, 'error');
-      window.alert(message);
-    } finally {
-      button.disabled = false;
-      button.textContent = originalText;
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.ok) {
+      const suffix = data.requestId ? ` (Ref: ${data.requestId})` : '';
+      throw new Error((data.message || 'Could not submit your request.') + suffix);
     }
+
+    form.reset();
+    const suffix = data.requestId ? ` Ref: ${data.requestId}` : '';
+    setFormStatus(form, `Thanks. Your request was submitted successfully.${suffix}`, 'success');
+  } catch (error) {
+    const message = error && error.message
+      ? error.message
+      : 'Could not submit right now. Please call or WhatsApp us.';
+    setFormStatus(form, message, 'error');
+    window.alert(message);
+  } finally {
+    button.disabled = false;
+    button.textContent = originalText;
+    form.dataset.submitting = '0';
+  }
+}
+
+forms.forEach((form) => {
+  form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    submitForm(form);
   });
+
+  const submitButton = form.querySelector('button[type="submit"]');
+  if (submitButton) {
+    submitButton.addEventListener('click', (event) => {
+      event.preventDefault();
+      submitForm(form);
+    });
+  }
 });
 
 if (backToTopBtn) {

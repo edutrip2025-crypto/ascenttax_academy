@@ -8,6 +8,28 @@ function getField(payload, key) {
   return sanitize(payload[key]);
 }
 
+function parseRequestBody(req) {
+  const body = req.body;
+  if (!body) return {};
+
+  if (typeof body === 'object') {
+    return body;
+  }
+
+  if (typeof body === 'string') {
+    try {
+      return JSON.parse(body);
+    } catch (error) {
+      const params = new URLSearchParams(body);
+      const parsed = {};
+      for (const [key, value] of params.entries()) parsed[key] = value;
+      return parsed;
+    }
+  }
+
+  return {};
+}
+
 function buildHtml(data) {
   const rows = Object.entries(data)
     .map(([key, value]) => `<tr><td style="padding:8px;border:1px solid #ddd;"><b>${key}</b></td><td style="padding:8px;border:1px solid #ddd;">${value || '-'}</td></tr>`)
@@ -52,12 +74,12 @@ module.exports = async function handler(req, res) {
       return res.status(500).json({ ok: false, message: 'Server email config missing: SMTP_PASS', requestId });
     }
 
-    const payload = req.body && typeof req.body === 'object' ? req.body : {};
+    const payload = parseRequestBody(req);
     const formType = getField(payload, 'formType') || 'contact';
     const name = getField(payload, 'name');
     const email = getField(payload, 'email');
     const phone = getField(payload, 'phone');
-    const preferredProgram = getField(payload, 'preferredProgram');
+    const preferredProgram = getField(payload, 'preferredProgram') || getField(payload, 'preferred_program');
     const message = getField(payload, 'message');
     const sourcePage = getField(payload, 'sourcePage');
     const honey = getField(payload, 'honey');
