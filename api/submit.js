@@ -30,8 +30,8 @@ module.exports = async function handler(req, res) {
 
   try {
     const smtpHost = process.env.SMTP_HOST || 'smtp.titan.email';
-    const smtpPort = Number(process.env.SMTP_PORT || 465);
-    const smtpSecure = String(process.env.SMTP_SECURE || 'true').toLowerCase() === 'true';
+    const smtpPort = Number(process.env.SMTP_PORT || 587);
+    const smtpSecure = String(process.env.SMTP_SECURE || 'false').toLowerCase() === 'true';
     const smtpUser = process.env.SMTP_USER || 'info@ascenttaxacademy.com';
     const smtpPass = process.env.SMTP_PASS;
     const toEmail = process.env.FORM_TO_EMAIL || 'info@ascenttaxacademy.com';
