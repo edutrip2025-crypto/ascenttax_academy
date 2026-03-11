@@ -401,19 +401,19 @@
           <input type="text" name="honey" tabindex="-1" autocomplete="off" style="display:none">
           <label>
             Full Name
-            <input type="text" name="name" placeholder="Enter your full name" required>
+            <input type="text" name="name" autocomplete="name" placeholder="Enter your full name" required>
           </label>
           <label>
             Email
-            <input type="email" name="email" placeholder="Enter your email" required>
+            <input type="email" name="email" autocomplete="email" placeholder="Enter your email" required>
           </label>
           <label>
             Phone
-            <input type="tel" name="phone" placeholder="Enter your phone number" required>
+            <input type="tel" name="phone" autocomplete="tel" placeholder="Enter your phone number" required>
           </label>
           <label>
             Preferred Program
-            <select name="preferred_program" required>
+            <select name="preferred_program" autocomplete="off" required>
               <option value="">Select a course</option>
               <option>EA - Training and Placement</option>
               <option>US CMA - Training and Placement</option>
@@ -484,15 +484,15 @@
             <input type="text" name="honey" tabindex="-1" autocomplete="off" style="display:none">
             <label>
               Full Name
-              <input type="text" name="name" placeholder="Enter your full name" required>
+              <input type="text" name="name" autocomplete="name" placeholder="Enter your full name" required>
             </label>
             <label>
               Email
-              <input type="email" name="email" placeholder="Enter your email" required>
+              <input type="email" name="email" autocomplete="email" placeholder="Enter your email" required>
             </label>
             <label>
               Message
-              <textarea name="message" placeholder="Write your query" rows="4" required></textarea>
+              <textarea name="message" autocomplete="off" placeholder="Write your query" rows="4" required></textarea>
             </label>
             <button type="submit" class="btn btn-primary">Send Message</button>
             <p class="form-status" aria-live="polite"></p>
