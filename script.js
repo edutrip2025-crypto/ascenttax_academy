@@ -189,35 +189,47 @@ document.addEventListener('click', (event) => {
 });
 
 const forms = [...document.querySelectorAll('.enroll-form')];
+
+function setFormStatus(form, message, tone) {
+  let status = form.querySelector('.form-status');
+  if (!status) {
+    status = document.createElement('p');
+    status.className = 'form-status';
+    status.setAttribute('aria-live', 'polite');
+    form.appendChild(status);
+  }
+
+  status.textContent = message || '';
+  status.classList.remove('success', 'error');
+  if (tone === 'success') status.classList.add('success');
+  if (tone === 'error') status.classList.add('error');
+  return status;
+}
+
 forms.forEach((form) => {
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     const button = form.querySelector('button[type="submit"]');
-    const status = form.querySelector('.form-status');
     if (!button) return;
-
-    const formData = new FormData(form);
-    const payload = {
-      formType: form.dataset.formType || '',
-      name: (formData.get('name') || '').toString().trim(),
-      email: (formData.get('email') || '').toString().trim(),
-      phone: (formData.get('phone') || '').toString().trim(),
-      preferredProgram: (formData.get('preferred_program') || '').toString().trim(),
-      message: (formData.get('message') || '').toString().trim(),
-      sourcePage: window.location.href,
-      honey: (formData.get('honey') || '').toString().trim()
-    };
 
     const originalText = button.textContent;
     button.disabled = true;
     button.textContent = 'Sending...';
-
-    if (status) {
-      status.textContent = '';
-      status.classList.remove('success', 'error');
-    }
+    setFormStatus(form, '', '');
 
     try {
+      const formData = new FormData(form);
+      const payload = {
+        formType: form.dataset.formType || '',
+        name: (formData.get('name') || '').toString().trim(),
+        email: (formData.get('email') || '').toString().trim(),
+        phone: (formData.get('phone') || '').toString().trim(),
+        preferredProgram: (formData.get('preferred_program') || '').toString().trim(),
+        message: (formData.get('message') || '').toString().trim(),
+        sourcePage: window.location.href,
+        honey: (formData.get('honey') || '').toString().trim()
+      };
+
       const response = await fetch(FORM_ENDPOINT, {
         method: 'POST',
         headers: {
@@ -234,16 +246,13 @@ forms.forEach((form) => {
       }
 
       form.reset();
-      if (status) {
-        const suffix = data.requestId ? ` Ref: ${data.requestId}` : '';
-        status.textContent = `Thanks. Your request was submitted successfully.${suffix}`;
-        status.classList.add('success');
-      }
+      const suffix = data.requestId ? ` Ref: ${data.requestId}` : '';
+      setFormStatus(form, `Thanks. Your request was submitted successfully.${suffix}`, 'success');
     } catch (error) {
-      if (status) {
-        status.textContent = error.message || 'Could not submit right now. Please call or WhatsApp us.';
-        status.classList.add('error');
-      }
+      const message = error && error.message
+        ? error.message
+        : 'Could not submit right now. Please call or WhatsApp us.';
+      setFormStatus(form, message, 'error');
     } finally {
       button.disabled = false;
       button.textContent = originalText;
