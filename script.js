@@ -208,21 +208,9 @@ function setFormStatus(form, message, tone) {
   return status;
 }
 
-function renderSuccessMessage(form, formType) {
-  const status = setFormStatus(form, '', 'success');
-  const title = formType === 'enrollment'
-    ? 'Request Submitted Successfully'
-    : 'Message Sent Successfully';
-  const detail = formType === 'enrollment'
-    ? 'Our counseling team will contact you shortly with your next-step learning plan.'
-    : 'Our team received your message and will respond soon.';
-
-  status.innerHTML = `
-    <span style="display:block;padding:10px 12px;border-radius:10px;background:rgba(58,190,120,.16);border:1px solid rgba(58,190,120,.45);">
-      <strong style="display:block;font-size:1rem;">${title}</strong>
-      <span style="display:block;margin-top:4px;">${detail}</span>
-    </span>
-  `;
+function redirectToSubmissionStatus(formType) {
+  const type = encodeURIComponent(formType || 'contact');
+  window.location.href = `submission-status.html?status=success&type=${type}`;
 }
 
 async function submitForm(form) {
@@ -266,7 +254,7 @@ async function submitForm(form) {
     }
 
     form.reset();
-    renderSuccessMessage(form, payload.formType || form.dataset.formType || '');
+    redirectToSubmissionStatus(payload.formType || form.dataset.formType || '');
   } catch (error) {
     const message = error && error.message
       ? error.message
