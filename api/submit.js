@@ -116,15 +116,16 @@ module.exports = async function handler(req, res) {
       ? 'New Enrollment Request - Ascent Tax Academy'
       : 'New Contact Message - Ascent Tax Academy';
 
-    const transporter = nodemailer.createTransport({
-      host: smtpHost,
-      port: smtpPort,
-      secure: smtpSecure,
-      auth: {
-        user: smtpUser,
-        pass: smtpPass
-      }
-    });
+    const buildTransporter = (secureFlag) =>
+      nodemailer.createTransport({
+        host: smtpHost,
+        port: smtpPort,
+        secure: secureFlag,
+        auth: {
+          user: smtpUser,
+          pass: smtpPass
+        }
+      });
 
     const html = buildHtml({
       Form: isEnrollment ? 'Enrollment' : 'Contact',
@@ -145,8 +146,21 @@ module.exports = async function handler(req, res) {
       html
     };
 
-    console.log(`[${requestId}] submit:send_attempt`, { subject, formType });
-    const info = await transporter.sendMail(mailOptions);
+    console.log(`[${requestId}] submit:send_attempt`, { subject, formType, smtpSecure });
+    let info;
+    try {
+      info = await buildTransporter(smtpSecure).sendMail(mailOptions);
+    } catch (error) {
+      const errMessage = error && error.message ? error.message : '';
+      const shouldRetryInsecure = smtpSecure && /wrong version number/i.test(errMessage);
+      if (!shouldRetryInsecure) throw error;
+
+      console.warn(`[${requestId}] submit:retry_insecure_tls`, {
+        reason: 'wrong version number',
+        retrySecure: false
+      });
+      info = await buildTransporter(false).sendMail(mailOptions);
+    }
     console.log(`[${requestId}] submit:send_success`, { messageId: info.messageId || null });
     return res.status(200).json({ ok: true, id: info.messageId || null, requestId });
   } catch (error) {
