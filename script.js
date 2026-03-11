@@ -6,7 +6,7 @@ const menuToggle = document.getElementById('menu-toggle');
 const siteNav = document.querySelector('.site-nav');
 const progressBar = document.getElementById('scroll-progress-bar');
 const backToTopBtn = document.getElementById('back-to-top');
-const FORM_ENDPOINT = 'https://www.ascenttaxacademy.com/api/submit';
+const FORM_ENDPOINT = '/api/submit';
 let activePage = 'home';
 let isTransitioning = false;
 
